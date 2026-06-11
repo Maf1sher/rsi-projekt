@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
 import api from '../api/axios';
 
@@ -18,30 +18,39 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm p-4 mb-6">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold text-blue-600">NoticeBoard</Link>
-          <div className="flex items-center space-x-6">
-            <Link to="/" className="hover:text-blue-500">Public Notices</Link>
+    <div className="min-h-screen">
+      <nav className="navbar">
+        <div className="nav-container">
+          <NavLink to="/" className="nav-brand">NoticeBoard</NavLink>
+          
+          <div className="nav-links">
+            <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              Public Notices
+            </NavLink>
+            
             {user ? (
               <>
-                <Link to="/my-notices" className="hover:text-blue-500">My Notices</Link>
-                <div className="flex items-center space-x-4 ml-4 pl-4 border-l">
-                  <span>Welcome, <strong>{user}</strong></span>
-                  <button onClick={handleLogout} className="text-red-500 hover:underline">Logout</button>
+                <NavLink to="/my-notices" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  My Notices
+                </NavLink>
+                <div className="nav-auth">
+                  <span className="subtitle">Welcome, <strong>{user}</strong></span>
+                  <button onClick={handleLogout} className="btn btn-danger" style={{fontSize: '0.875rem'}}>
+                    Logout
+                  </button>
                 </div>
               </>
             ) : (
-              <>
-                <Link to="/login" className="hover:text-blue-500">Login</Link>
-                <Link to="/register" className="hover:text-blue-500">Register</Link>
-              </>
+              <div className="nav-auth">
+                <NavLink to="/login" className="nav-link">Login</NavLink>
+                <NavLink to="/register" className="btn btn-primary">Register</NavLink>
+              </div>
             )}
           </div>
         </div>
       </nav>
-      <main className="px-4 pb-12">
+      
+      <main className="max-w-4xl mx-auto px-4">
         <Outlet />
       </main>
     </div>
