@@ -142,6 +142,27 @@ a {
   outline: 2px solid var(--primary);
   outline-offset: -1px;
 }
+.input-icon-wrapper { position: relative; }
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+.input-with-icon { padding-left: 2.5rem; }
+
+.auth-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+}
+.auth-icon-blue { background-color: #dbeafe; color: #2563eb; }
+.auth-icon-green { background-color: #dcfce7; color: #16a34a; }
 
 /* Typography */
 .title { font-size: 1.875rem; font-weight: 700; margin-bottom: 1.5rem; }

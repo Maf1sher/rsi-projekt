@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { Notice, PagedResponse } from '../types';
+import type { Notice, PagedResponse } from '../types';
 import { Trash2 } from 'lucide-react';
 
 interface NoticeListProps {
