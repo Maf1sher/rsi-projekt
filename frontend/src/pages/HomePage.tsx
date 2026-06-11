@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { Notice, PagedResponse } from '../types';
+import type { Notice, PagedResponse } from '../types';
+import NoticeCard from '../components/NoticeCard';
 
 const HomePage: React.FC = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -21,27 +22,31 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6">Public Notices</h2>
+      <h2 className="title">Public Notices</h2>
       <div className="space-y-4">
-        {notices.map(n => (
-          <div key={n.id} className="p-6 bg-white rounded-lg shadow-sm border">
-            <h3 className="text-xl font-semibold mb-2">{n.title}</h3>
-            <p className="text-gray-700 mb-4">{n.content}</p>
-            <div className="text-sm text-gray-500">By {n.authorUsername} • {new Date(n.createdAt).toLocaleString()}</div>
+        {notices.length === 0 && (
+          <div className="card text-center py-10 text-gray-500">
+            No notices found. Be the first to post something!
           </div>
+        )}
+        {notices.map(n => (
+          <NoticeCard key={n.id} notice={n} />
         ))}
       </div>
-      <div className="flex justify-center mt-8 space-x-2">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setPage(i)}
-            className={`px-3 py-1 rounded ${page === i ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-10 space-x-2">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setPage(i)}
+              className={`pagination-btn ${page === i ? 'active' : ''}`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

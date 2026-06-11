@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { Notice, PagedResponse } from '../types';
-import { Trash2, Plus } from 'lucide-react';
+import type { Notice, PagedResponse } from '../types';
+import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import NoticeCard from '../components/NoticeCard';
 
 const MyNoticesPage: React.FC = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -22,7 +23,7 @@ const MyNoticesPage: React.FC = () => {
   useEffect(() => { fetchMyNotices(page); }, [page]);
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Delete this notice?')) return;
+    if (!window.confirm('Are you sure you want to delete this notice?')) return;
     try {
       await api.delete(`/notices/${id}`);
       fetchMyNotices(page);
@@ -31,34 +32,42 @@ const MyNoticesPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">My Notices</h2>
-        <Link to="/my-notices/add" className="bg-green-500 text-white px-4 py-2 rounded flex items-center hover:bg-green-600 transition">
-          <Plus size={20} className="mr-2" /> Add New
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="title" style={{ marginBottom: 0 }}>My Notices</h2>
+        <Link to="/my-notices/add" className="btn btn-primary">
+          <Plus size={20} style={{ marginRight: '0.5rem' }} /> Add New Notice
         </Link>
       </div>
+      
       <div className="space-y-4">
-        {notices.length === 0 && <p className="text-gray-500">You haven't posted any notices yet.</p>}
-        {notices.map(n => (
-          <div key={n.id} className="p-6 bg-white rounded-lg shadow-sm border flex justify-between items-start">
-            <div>
-              <h3 className="text-xl font-semibold mb-2">{n.title}</h3>
-              <p className="text-gray-700">{n.content}</p>
-              <div className="text-xs text-gray-400 mt-2">{new Date(n.createdAt).toLocaleString()}</div>
-            </div>
-            <button onClick={() => handleDelete(n.id)} className="text-red-500 hover:text-red-700">
-              <Trash2 size={20} />
-            </button>
+        {notices.length === 0 && (
+          <div className="card text-center py-10 text-gray-500">
+            You haven't posted any notices yet.
           </div>
+        )}
+        {notices.map(n => (
+          <NoticeCard 
+            key={n.id} 
+            notice={n} 
+            showDelete={true} 
+            onDelete={handleDelete} 
+          />
         ))}
       </div>
-      <div className="flex justify-center mt-8 space-x-2">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button key={i} onClick={() => setPage(i)} className={`px-3 py-1 rounded ${page === i ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-10 space-x-2">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button 
+              key={i} 
+              onClick={() => setPage(i)} 
+              className={`pagination-btn ${page === i ? 'active' : ''}`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
