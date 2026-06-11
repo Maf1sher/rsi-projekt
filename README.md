@@ -44,6 +44,49 @@ Aplikacja jest dostępna pod adresem: `http://localhost:5173`.
 
 ## 4. Przykładowe komunikaty HTTP
 
+### Request: Pobranie ogłoszeń
+Endpoint publiczny. Obsługuje paginację i sortowanie.
+
+```http
+GET /api/notices?page=0&size=5&sort=createdAt,desc HTTP/1.1
+Host: localhost:8080
+```
+
+### Response: Pobranie ogłoszeń
+Zwracany kod 200 OK. Odpowiedź zawiera strukturę stronicowaną wraz z linkami HATEOAS.
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/hal+json
+
+{
+  "_embedded": {
+    "notices": [
+      {
+        "id": 1,
+        "title": "Przykładowe ogłoszenie",
+        "content": "Treść ogłoszenia.",
+        "authorUsername": "uzytkownik",
+        "createdAt": "2026-06-11T22:30:00.000",
+        "_links": {
+          "self": { "href": "http://localhost:8080/api/notices?page=0&size=5" }
+        }
+      }
+    ]
+  },
+  "_links": {
+    "self": { "href": "http://localhost:8080/api/notices?page=0&size=5" },
+    "next": { "href": "http://localhost:8080/api/notices?page=1&size=5" }
+  },
+  "page": {
+    "size": 5,
+    "totalElements": 1,
+    "totalPages": 1,
+    "number": 0
+  }
+}
+```
+
 ### Request: Dodanie ogłoszenia
 Wymagane uwierzytelnienie za pomocą ciasteczka JWT.
 
