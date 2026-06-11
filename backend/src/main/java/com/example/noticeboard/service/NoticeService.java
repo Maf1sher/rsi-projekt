@@ -23,6 +23,10 @@ public class NoticeService {
         return noticeRepository.findAll(pageable);
     }
 
+    public Page<Notice> getUserNotices(String username, Pageable pageable) {
+        return noticeRepository.findByAuthorUsername(username, pageable);
+    }
+
     @Transactional
     public Notice createNotice(NoticeCreateDto dto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

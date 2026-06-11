@@ -60,6 +60,31 @@ public class NoticeController {
         return ResponseEntity.ok(pagedModel);
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<PagedModel<EntityModel<NoticeDto>>> getMyNotices(Pageable pageable) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Page<Notice> noticesPage = noticeService.getUserNotices(username, pageable);
+        
+        List<EntityModel<NoticeDto>> noticeModels = noticesPage.getContent().stream()
+                .map(notice -> {
+                    NoticeDto dto = noticeMapper.toDto(notice);
+                    return EntityModel.of(dto,
+                            linkTo(methodOn(NoticeController.class).getMyNotices(pageable)).withSelfRel());
+                })
+                .collect(Collectors.toList());
+
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(
+                noticesPage.getSize(), 
+                noticesPage.getNumber(), 
+                noticesPage.getTotalElements(), 
+                noticesPage.getTotalPages());
+
+        PagedModel<EntityModel<NoticeDto>> pagedModel = PagedModel.of(noticeModels, metadata);
+        pagedModel.add(linkTo(methodOn(NoticeController.class).getMyNotices(pageable)).withSelfRel());
+        
+        return ResponseEntity.ok(pagedModel);
+    }
+
     @PostMapping
     public ResponseEntity<NoticeDto> createNotice(@Valid @RequestBody NoticeCreateDto dto) {
         Notice notice = noticeService.createNotice(dto);
