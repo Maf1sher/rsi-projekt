@@ -2,17 +2,20 @@ package com.example.noticeboard.controller;
 
 import com.example.noticeboard.dto.NoticeCreateDto;
 import com.example.noticeboard.dto.NoticeDto;
+import com.example.noticeboard.mapper.NoticeMapper;
 import com.example.noticeboard.model.Notice;
 import com.example.noticeboard.service.NoticeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -23,24 +26,36 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class NoticeController {
 
     private final NoticeService noticeService;
-    private final PagedResourcesAssembler<Notice> pagedResourcesAssembler;
+    private final NoticeMapper noticeMapper;
 
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<NoticeDto>>> getAllNotices(Pageable pageable) {
-        Page<Notice> notices = noticeService.getAllNotices(pageable);
+        Page<Notice> noticesPage = noticeService.getAllNotices(pageable);
         
-        PagedModel<EntityModel<NoticeDto>> pagedModel = pagedResourcesAssembler.toModel(notices, notice -> {
-            NoticeDto dto = NoticeDto.builder()
-                    .id(notice.getId())
-                    .title(notice.getTitle())
-                    .content(notice.getContent())
-                    .authorUsername(notice.getAuthor().getUsername())
-                    .createdAt(notice.getCreatedAt())
-                    .build();
-            
-            return EntityModel.of(dto,
-                    linkTo(methodOn(NoticeController.class).getAllNotices(pageable)).withSelfRel());
-        });
+        List<EntityModel<NoticeDto>> noticeModels = noticesPage.getContent().stream()
+                .map(notice -> {
+                    NoticeDto dto = noticeMapper.toDto(notice);
+                    return EntityModel.of(dto,
+                            linkTo(methodOn(NoticeController.class).getAllNotices(pageable)).withSelfRel());
+                })
+                .collect(Collectors.toList());
+
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(
+                noticesPage.getSize(), 
+                noticesPage.getNumber(), 
+                noticesPage.getTotalElements(), 
+                noticesPage.getTotalPages());
+
+        PagedModel<EntityModel<NoticeDto>> pagedModel = PagedModel.of(noticeModels, metadata);
+
+        // Dodanie linków paginacji ręcznie, aby spełnić wymóg HATEOAS bez PagedResourcesAssembler
+        pagedModel.add(linkTo(methodOn(NoticeController.class).getAllNotices(pageable)).withSelfRel());
+        if (noticesPage.hasNext()) {
+            pagedModel.add(linkTo(methodOn(NoticeController.class).getAllNotices(pageable.next())).withRel("next"));
+        }
+        if (noticesPage.hasPrevious()) {
+            pagedModel.add(linkTo(methodOn(NoticeController.class).getAllNotices(pageable.previousOrFirst())).withRel("prev"));
+        }
 
         return ResponseEntity.ok(pagedModel);
     }
@@ -48,13 +63,7 @@ public class NoticeController {
     @PostMapping
     public ResponseEntity<NoticeDto> createNotice(@Valid @RequestBody NoticeCreateDto dto) {
         Notice notice = noticeService.createNotice(dto);
-        NoticeDto responseDto = NoticeDto.builder()
-                .id(notice.getId())
-                .title(notice.getTitle())
-                .content(notice.getContent())
-                .authorUsername(notice.getAuthor().getUsername())
-                .createdAt(notice.getCreatedAt())
-                .build();
+        NoticeDto responseDto = noticeMapper.toDto(notice);
         
         responseDto.add(linkTo(methodOn(NoticeController.class).getAllNotices(Pageable.unpaged())).withRel("all-notices"));
         
